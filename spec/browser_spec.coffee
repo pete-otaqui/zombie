@@ -343,6 +343,49 @@ vows.describe("Browser").addBatch(
     "should return status code": (_, browser, status)->
       assert.equal status, 200
 
+  "click anything":
+    topic: ->
+      brains.get "/browser/head", (req, res)->
+        res.send """
+        <html>
+          <head>
+            <script src="/jquery.js"></script>
+            <script>
+              $(function() {
+                $('#fakeLink').click(function() {
+                  document.location.href='/browser/headless'
+                });
+              });
+          </head>
+          <body>
+            <p id="fakeLink">Smash</p>
+          </body>
+        </html>
+        """
+      brains.get "/browser/headless", (req, res)->
+        res.send """
+        <html>
+          <head>
+            <script src="/jquery.js"></script>
+          </head>
+          <body>
+            <script>
+              $(function() { document.title = "The Dead" });
+            </script>
+          </body>
+        </html>
+        """
+      browser = new Browser
+      browser.wants "http://localhost:3003/browser/head", =>
+        browser.clickAnything "#fakeLink", @callback
+
+    "should change location": (_, browser)->
+      assert.equal browser.location, "http://localhost:3003/browser/headless"
+    "should run all events": (_, browser)->
+      assert.equal browser.document.title, "The Dead"
+    "should return status code": (_, browser, status)->
+      assert.equal status, 200
+
 
   ###
   # NOTE: htmlparser doesn't handle tag soup.

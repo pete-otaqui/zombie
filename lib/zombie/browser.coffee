@@ -458,6 +458,20 @@ class Browser extends EventEmitter
     else
       throw new Error("No link matching '#{selector}'")
 
+  # ### browser.clickAnything(selector, callback)
+  #
+  # Clicks anything. Clicking on an element can trigger events etc: use a callback to be notified of
+  # completion.  Finds element by selector.
+  #
+  # selector - CSS selector or link text
+  # callback - Called with two arguments: error and browser
+  clickAnything: (selector, callback)->
+    if ele = @querySelector(selector)
+      @fire "click", ele, =>
+        callback null, this, @statusCode
+    else
+      throw new Error("No element matching '#{selector}'")
+
   # ### browser.saveHistory() => String
   #
   # Save history to a text string.  You can use this to load the data later on using `browser.loadHistory`.
